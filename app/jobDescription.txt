@@ -1,0 +1,58 @@
+About the job
+Established in 2008, Geidea epitomizes customer focused empowerment and commercial success through continuous innovation.
+Geidea makes best in class digital payment solutions available for all by attracting and leveraging the best creative & entrepreneurial talent in the market
+Our solutions give any business the chance to get ahead and reach for more no matter their size or maturity.
+Our technology mirrors our people - Smart, Innovative & Forward Thinking
+www.geidea.net
+
+
+
+To maintain a competitive advantage as we grow, we are currently looking for a new "Software Tester".
+
+
+Job purpose:
+
+The purpose of this role is to design & execute test cases and ensure implementation according to the testing guidelines the team in Geidea Egypt to ensure delivery of products of high quality.
+
+
+Key Responsibilities:
+
+Design and execute test cases
+Review test cases assigned to Jr. Testers
+Prioritize test cases on squad level
+Report defects
+Report on testing status and squad releases
+Ensure testing scope is defined, and ensure coverage of assigned squad
+Analyse test results, report bugs to Senior Tester or Testing lead
+Ensure testing is done according to guidelines
+Ensure accuracy of testing estimates within the assigned squad
+Ensure testing quality and adherence to testing process and guidelines
+Define/Develop automation test scripts if needed / requested on squad level
+
+
+Qualifications:
+
+2+ years of experience
+Bachelor’s degree in Engineering or computer science
+Analyse user stories, use cases, and requirements for validity and feasibility
+Writing and executing test cases and test plans
+Detect and track software defects and inconsistencies
+Execute all levels of testing (System, Integration, and Regression)
+Good knowledge of relational databases and Microsoft SQL Server
+API testing knowledge
+Familiar with Jira
+Proficient in English
+Understanding of testing methodologies and tools
+Experience in Automation is a plus
+ISTQB Certified
+
+
+Our values guide how we think and act - They describe what we care about the most
+
+Customer first - It’s embedded in our design thinking and customer service approach
+Open - Openness allows us to constantly improve and evolve
+Real - No jargon and no excuses!
+Bold - Constantly challenging ourselves and our way of thinking.
+Resilient – If we fail, we bounce back stronger than before.
+Collaborative - We know that we can achieve a lot more as a team.
+We are changing lives by constantly striving for a better solution.

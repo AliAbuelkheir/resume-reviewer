@@ -1,0 +1,6 @@
+crewai==0.165.1
+crewai[tools]==0.165.1
+fastapi==0.116.1
+uvicorn==0.35.0
+pydantic==2.11.1
+python-dotenv==1.1.1
