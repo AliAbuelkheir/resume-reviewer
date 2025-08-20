@@ -103,3 +103,8 @@ async def run_crew(
         # Clean up: delete uploaded file
         if os.path.exists(resume_path):
             os.remove(resume_path)
+
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Resume Reviewer System API"}
