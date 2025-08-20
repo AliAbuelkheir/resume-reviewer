@@ -1,3 +1,4 @@
+import shutil
 from fastapi import HTTPException
 import os
 import tempfile
