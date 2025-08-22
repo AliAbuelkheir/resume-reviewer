@@ -13,6 +13,9 @@ Thumbs.db
 
 # API keys and sensitive data
 .env
+.pdf
+.txt
+.yaml
 
 # Build artifacts
 build/

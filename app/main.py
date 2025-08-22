@@ -1,8 +1,11 @@
 import shutil
+import asyncio
+from typing import Optional
 from fastapi import HTTPException
 import os
 import tempfile
 from fastapi import FastAPI, File, Form, Header, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from crewai import Crew
 from app.agents.agent1 import resume_analyzer_agent
 from app.agents.agent2 import job_analyzer_agent
@@ -12,51 +15,44 @@ from app.tasks.task2 import job_analysis_task
 from app.tasks.task3 import ats_score_task
 from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(
+    title="Resume Reviewer System API",
+    description=(
+        "API to analyze resumes against a job description and return an ATS-style score. "
+        "Upload a PDF resume via the `/run-crew` endpoint."
+    ),
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
 
-# @app.post("/run-crew")
-# async def run_crew(
-#     job_description: str = Form(...), 
-#     resume_file: UploadFile = File(...), 
-#     resume_filename: str = Form(...),
-#     x_api_key: str = Header(...)
-#     ):
+# Minimal, configurable CORS so the Swagger UI can be used from a browser during development.
+raw = os.getenv("ALLOWED_ORIGINS")
+if raw:
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
 
-#     if x_api_key != os.getenv("API_KEY"):
-#         raise HTTPException(status_code=401, detail="Invalid API Key")
-#     # Create a temporary file for the uploaded PDF with the provided filename
-#     try:
-#         # Use tempfile.NamedTemporaryFile to save the PDF locally
-#         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-#             contents = await resume_file.read()
-#             tmp_file.write(contents)
-#             temp_resume_path = tmp_file.name
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
-#         # Rename the temporary file to match the provided resume_filename
-#         os.replace(temp_resume_path, os.path.join(os.path.dirname(temp_resume_path), resume_filename))
-
-#         # Update the resume_filename to the final path
-#         resume_path = os.path.join(os.path.dirname(temp_resume_path), resume_filename)
-
-#         # Set up and run the CrewAI crew
-#         crew = Crew(
-#             agents=[resume_analyzer_agent, job_analyzer_agent, score_generator_agent],
-#             tasks=[resume_analysis_task, job_analysis_task, ats_score_task],
-#             # memory=True,
-#             verbose=True  # For debugging
-#         )
-#         result = crew.kickoff(inputs={
-#             "resume_filename": resume_path,
-#             "job_description": job_description
-#         })
-        
-#         print(resume_path)
-#         print(temp_resume_path)
-#         return {"result": result.raw}
-#     finally:
-#         # Delete the temporary PDF file after execution
-#         if os.path.exists(resume_path):
-#             os.unlink(resume_path)
+# Save uploaded file to uploads folder in a thread so we don't block the event loop.
+        # Ensure the file is flushed and synced to disk before proceeding to Crew.
+def _save_and_sync(upload_file, dest_path):
+    # upload_file.file is a file-like object opened by Starlette's UploadFile
+    # copy into dest_path, flush and fsync to ensure write completes.
+    with open(dest_path, "wb") as buffer:
+        shutil.copyfileobj(upload_file.file, buffer)
+        buffer.flush()
+        try:
+            os.fsync(buffer.fileno())
+        except OSError:
+            # fsync may not be supported in some environments; ignore if it fails
+            pass
 
 UPLOAD_DIR = "web/uploads"  # matches your mounts: block in .platform.app.yaml
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB
@@ -67,25 +63,34 @@ async def run_crew(
     job_description: str = Form(...), 
     resume_file: UploadFile = File(...), 
     resume_filename: str = Form(...),
-    x_api_key: str = Header(...)
+    x_api_key: Optional[str] = Header(None)
 ):
     if x_api_key != os.getenv("API_KEY"):
         raise HTTPException(status_code=401, detail="Invalid API Key")
     
     contents = await resume_file.read()
     if len(contents) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=413, detail="File too large. Max 5 MB allowed.")
+        raise HTTPException(status_code=413, detail="File too large. Max 2 MB allowed.")
 
     # Reset file pointer so we can save it
     resume_file.file.seek(0)
 
-    # Full path where file will be saved
+    # Validate that the uploaded file is a PDF
+    allowed_types = {"application/pdf", "application/x-pdf"}
+    if resume_file.content_type and resume_file.content_type.lower() not in allowed_types:
+        raise HTTPException(status_code=415, detail="Only PDF uploads are accepted.")
+
+    # Ensure filename ends with .pdf
+    base, ext = os.path.splitext(resume_filename)
+    if ext.lower() != ".pdf":
+        resume_filename = f"{base}.pdf"
+
+    # Full path where file will be saved (as PDF)
     resume_path = os.path.join(UPLOAD_DIR, resume_filename)
 
     try:
-        # Save uploaded file to uploads folder
-        with open(resume_path, "wb") as buffer:
-            shutil.copyfileobj(resume_file.file, buffer)
+        
+        await asyncio.to_thread(_save_and_sync, resume_file, resume_path)
 
         # Run CrewAI
         crew = Crew(
@@ -98,7 +103,7 @@ async def run_crew(
             "job_description": job_description
         })
 
-        return {"result": result.raw}
+        return result.json_dict
 
     finally:
         # Clean up: delete uploaded file

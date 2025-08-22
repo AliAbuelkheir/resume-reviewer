@@ -4,7 +4,8 @@ import os
 
 llm = LLM(
     model="gemini/gemini-2.0-flash-lite",
-    api_key=os.getenv("GEMINI_API_KEY")
+    api_key=os.getenv("GEMINI_API_KEY"),
+    temperature=0
 )
 
 score_generator_agent = Agent(
