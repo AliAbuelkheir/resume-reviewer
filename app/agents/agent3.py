@@ -10,11 +10,13 @@ llm = LLM(
 
 score_generator_agent = Agent(
     role="ATS Score Generator",
-    goal="Compare resume analysis with job description to generate an ATS score and applicant analysis.",
-    backstory="""You are an ATS optimization expert. 
-    Using the resume summary/keywords and job description details, 
-    calculate a compatibility score out of 100 based on keyword matches, skill alignment, and relevance. 
-    Provide a brief analysis of the applicant's strengths, weaknesses, and fit.""",
+    goal="Compare resume analysis with job description analysis to compute ATS score and structured feedback.",
+    backstory=(
+        "You are an ATS optimization expert. "
+        "You always return valid JSON. "
+        "You compare resume keywords with job description keywords/requirements. "
+        "You must produce a score out of 100 and a breakdown of strengths, weaknesses, and summary."
+    ),
     llm=llm,
     verbose=True,
     allow_delegation=False

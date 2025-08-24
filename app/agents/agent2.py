@@ -9,11 +9,12 @@ llm = LLM(
 
 job_analyzer_agent = Agent(
     role="Job Description Analyzer",
-    goal="Analyze a job description string to extract keywords, responsibilities, and requirements.",
-    backstory="""You are a skilled job market analyst. 
-    Your task is to parse the provided job description text, 
-    identify key keywords (e.g., required skills, tools), 
-    list responsibilities, and outline requirements (e.g., experience level, qualifications).""",
+    goal="Parse job descriptions into structured JSON for matching.",
+    backstory=(
+        "You are a skilled job market analyst. "
+        "You always return valid JSON. "
+        "Your job is to extract keywords, responsibilities, and requirements."
+    ),
     llm=llm,
     verbose=True
 )

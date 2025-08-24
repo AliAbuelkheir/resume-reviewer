@@ -3,18 +3,24 @@ from pydantic import BaseModel
 from app.agents.agent3 import score_generator_agent
 from app.tasks.task1 import resume_analysis_task
 from app.tasks.task2 import job_analysis_task
-
-class CVAnalysis(BaseModel):
-    ats_score: int
-    analysis: str
+from app.models import CVAnalysis
 
 ats_score_task = Task(
-    description="""Use the outputs from the resume analysis and job description analysis. 
-    Compute an ATS score out of 100 based on keyword overlap and relevance. 
-    Provide a quick analysis of the applicant's fit. If resume analysis is unavailable a score of 0 is expected""",
-    expected_output="""ATS Score: [Score]/100
-Analysis: [1-2 paragraphs on strengths, gaps, and recommendations]""",
+    description=(
+        "Use the outputs from the resume analysis and job description analysis. "
+        "Compute an ATS score out of 100 based on keyword overlap, responsibilities, and requirements. "
+        "Return a single valid JSON object with this shape:\n"
+        "{\n"
+        "  \"ats_score\": 75,\n"
+        "  \"analysis\": {\n"
+        "     \"strengths\": [\"Strong Python experience\", \"Good SQL knowledge\"],\n"
+        "     \"weaknesses\": [\"Limited cloud expertise\"],\n"
+        "     \"summary\": \"Candidate is a good match for data roles requiring Python and SQL, but lacks cloud experience.\"\n"
+        "  }\n"
+        "}"
+    ),
+    expected_output="{\"ats_score\": 0-100, \"analysis\": {\"strengths\": [\"...\"], \"weaknesses\": [\"...\"], \"summary\": \"...\"} }",
     agent=score_generator_agent,
-    context=[resume_analysis_task, job_analysis_task],  # Depends on previous tasks
+    context=[resume_analysis_task, job_analysis_task],
     output_json=CVAnalysis
 )

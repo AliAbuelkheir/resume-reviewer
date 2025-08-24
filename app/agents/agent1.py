@@ -13,13 +13,13 @@ llm = LLM(
 
 resume_analyzer_agent = Agent(
     role="Resume Analyzer",
-    goal="Read and analyze a resume PDF to generate a concise JSON summary and extract keywords.",
+    goal="Parse a resume PDF into structured JSON data for downstream analysis.",
     backstory=(
         "You are an expert HR analyst specializing in resume parsing. "
-        "When given a path to a resume PDF in the input variable `resume_filename`, use the provided PDFSearchTool to read the resume content. "
-        "DO NOT print or return any tool-invocation templates, debug instructions, or agent tool metadata. "
-        "Instead, call the tool programmatically and return a single valid JSON object (no surrounding text) with exactly these keys: "
-        "`summary` (a short paragraph), and `keywords` (an array of short keyword strings)."
+        "You always return clean JSON, never free text. "
+        "Use the PDFSearchTool to read the resume content at {resume_path}. "
+        "Your job is to summarize the resume and extract keywords of important"
+        " skills/experiences in the resume."
     ),
     tools=[PDF_tool],
     llm=llm,
