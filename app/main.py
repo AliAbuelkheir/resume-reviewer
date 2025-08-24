@@ -54,7 +54,7 @@ def _save_and_sync(upload_file, dest_path):
             # fsync may not be supported in some environments; ignore if it fails
             pass
 
-UPLOAD_DIR = "web/uploads"  # matches your mounts: block in .platform.app.yaml
+UPLOAD_DIR = os.path.normpath(os.path.join("web", "uploads"))  # matches your mounts: block in .platform.app.yaml
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -80,13 +80,14 @@ async def run_crew(
     if resume_file.content_type and resume_file.content_type.lower() not in allowed_types:
         raise HTTPException(status_code=415, detail="Only PDF uploads are accepted.")
 
-    # Ensure filename ends with .pdf
+    # Sanitize filename (prevent directory traversal) and ensure it ends with .pdf
+    resume_filename = os.path.basename(resume_filename)
     base, ext = os.path.splitext(resume_filename)
     if ext.lower() != ".pdf":
         resume_filename = f"{base}.pdf"
 
-    # Full path where file will be saved (as PDF)
-    resume_path = os.path.join(UPLOAD_DIR, resume_filename)
+    # Full path where file will be saved (as PDF) - normalized and absolute to avoid mixed separators
+    resume_path = os.path.abspath(os.path.normpath(os.path.join(UPLOAD_DIR, resume_filename)))
 
     try:
         
@@ -98,6 +99,7 @@ async def run_crew(
             tasks=[resume_analysis_task, job_analysis_task, ats_score_task],
             verbose=True
         )
+        crew.reset_memories(command_type='all')  
         result = crew.kickoff(inputs={
             "resume_filename": resume_path,
             "job_description": job_description
@@ -113,4 +115,11 @@ async def run_crew(
 
 @app.get("/")
 async def root():
+    # Run CrewAI
+    crew = Crew(
+        agents=[resume_analyzer_agent, job_analyzer_agent, score_generator_agent],
+        tasks=[resume_analysis_task, job_analysis_task, ats_score_task],
+        verbose=True
+    )
+    crew.list_models()
     return {"message": "Welcome to the Resume Reviewer System API"}
