@@ -56,19 +56,10 @@ The endpoint orchestrates 3 CrewAI tasks and returns structured JSON. Example sh
 
 ```json
 {
-  "resume_analysis": {
-    "summary": "Short paragraph summarizing experience.",
-    "keywords": ["Python", "SQL", "ETL"]
-  },
-  "job_analysis": {
-    "keywords": ["Python", "Machine Learning", "Agile"],
-    "responsibilities": ["Develop ML models", "Collaborate with data team"],
-    "requirements": ["3+ years experience", "Bachelor’s degree in CS"]
-  },
   "ats_score": 78,
   "analysis": {
-    "strengths": ["Strong Python experience", "Good SQL knowledge"],
-    "weaknesses": ["Limited cloud expertise"],
+    "strengths": "Strong Python experience; Good SQL knowledge",
+    "weaknesses": "Limited cloud expertise",
     "summary": "Candidate matches core technical skills but lacks depth in cloud platforms."
   }
 }
